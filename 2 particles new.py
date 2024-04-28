@@ -51,7 +51,7 @@ for i in range(s):
     n_op[name]=matrix
 
 file_path="n_op.txt"
-np.savetxt(file_path,n_op["n_1"],fmt='%.4f')
+np.savetxt(file_path,n_op["n_4"],fmt='%.4f')
 
 #Hamiltonian operator matrix
 
