@@ -9,15 +9,15 @@ import itertools
 
 #VALUE DEFINITION
 
-s=5         #dimension of lattice
+s=19         #dimension of lattice
 n=2         #number of particles
-a=2         #initial position
+a=5         #initial position
 mu=1        #value of mu
 tau=1       #value of tau
 U=1         #value of U
 
 t=0         #initial time
-t_f=10      #final time
+t_f=5      #final time
 nt=500      #number of iterations
 
 d=mt.comb(s+n-1,n) #dimension of the Hilbert space
@@ -63,12 +63,29 @@ for vector in basis:
             H_int[index[0],index[0]]+=value*(value-1)
 
 H_hop=np.zeros((d,d))                       #hopping terms
-H_hop[np.arange(d-1),np.arange(1,d)]=1
-H_hop[np.arange(1,d),np.arange(d-1)]=1
+shift_v1=np.zeros(s)
+shift_v2=np.zeros(s)
+for v1 in basis:
+    index1=np.where((basis==v1).all(axis=1))
+    for v2 in basis:
+        if (v1==v2).all():
+            continue
+        index2=np.where((basis==v2).all(axis=1))
+        for i in range(s):
+            shift_v1[:]=v1[:]
+            shift_v1[i]-=1
+            for j in range(s):
+                if (j!=i+1) or (j!=i+1):
+                    continue
+                shift_v2[:]=v2[:]
+                shift_v2[j]-=1
+                if (shift_v1==shift_v2).all():
+                    H_hop[index1,index2]=np.sqrt(np.dot(basis[index1],np.transpose(basis[index2])))
+                    H_hop[index2,index1]=np.sqrt(np.dot(basis[index1],np.transpose(basis[index2])))
 
 H=tau*H_hop+U/2*H_int                       #Hamiltonian
 file_path="H.txt"
-np.savetxt(file_path,H,fmt='%.0f')
+np.savetxt(file_path,H,fmt='%.3f')
 
 #Data storage matrices
 
@@ -79,8 +96,8 @@ prob=np.empty((nt+1,s))
 #INITIAL STATE
 
 psi_0_old=np.zeros(s)
-psi_0_old[3]=1
-psi_0_old[1]=1
+psi_0_old[10]=1
+psi_0_old[8]=1
 
 psi_0=np.zeros((d,1))
 index=np.where((basis==psi_0_old).all(axis=1))
@@ -103,7 +120,7 @@ for k in range(nt+1):
 
 #Data storage
 
-data=np.concatenate((prob,time),axis=1)
+data=np.concatenate(((prob),time),axis=1)
 file_path="data.txt"
 np.savetxt(file_path,data,fmt='%.4f')
 
@@ -119,13 +136,13 @@ for i in range(data.shape[1]-1):    #iterate over "pictures" in time
 
     colors=colormap(norm(x))        #convert probabilities to colors based on the colormap
 
-    sc=ax.scatter(np.repeat(i+1,len(x)),y,s=100,c=x,cmap='binary',label=f'Psi{i+1}',marker='_')
+    sc=ax.scatter(np.repeat(i+1,len(x)),y,s=100,c=x,cmap='binary',label=f'{i+1}',marker='_')
 
 ax.set_xlabel('Positions')
 ax.set_ylabel('Time')
 ax.set_title('Probabilities vs Time')
 ax.set_xticks(np.arange(data.shape[1]-1)+1)
-ax.set_xticklabels([f'Psi {i+1}' for i in range(data.shape[1] - 1)]) #name the columns
+ax.set_xticklabels([f'{i+1}' for i in range(data.shape[1] - 1)]) #name the columns
 
 #cbar = plt.colorbar(sc, ax=ax, label='Probability')
 
